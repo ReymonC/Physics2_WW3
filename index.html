@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics & Fluid Mechanics Interactive Assessment</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --correct-bg: #f0fdf4;
+      --correct-border: #86efac;
+      --correct-text: #166534;
+      --incorrect-bg: #fef2f2;
+      --incorrect-border: #fecaca;
+      --incorrect-text: #991b1b;
+      --radius: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 5rem;
+    }
+
+    /* Header */
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Container */
+    .quiz-container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* Score Banner */
+    .score-banner {
+      display: none;
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+    }
+
+    .score-banner.show { display: block; }
+
+    .score-banner h2 {
+      font-size: 1.6rem;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .score-banner p {
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+
+    /* Question Cards */
+    .question-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .question-header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .q-num {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .q-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    /* Options */
+    .options-group {
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      padding: 0.85rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      background: #ffffff;
+      transition: all 0.15s ease;
+      font-size: 0.98rem;
+    }
+
+    .option-label:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .option-label input[type="radio"] {
+      margin-top: 0.25rem;
+      cursor: pointer;
+      accent-color: var(--primary);
+      transform: scale(1.15);
+    }
+
+    .option-letter {
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 1.2rem;
+    }
+
+    /* Validation styles applied after grading */
+    .option-label.is-correct {
+      background: var(--correct-bg) !important;
+      border-color: var(--correct-border) !important;
+      color: var(--correct-text) !important;
+      font-weight: 600;
+    }
+
+    .option-label.is-wrong {
+      background: var(--incorrect-bg) !important;
+      border-color: var(--incorrect-border) !important;
+      color: var(--incorrect-text) !important;
+    }
+
+    /* Explanation Section */
+    .explanation-box {
+      display: none;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px dashed var(--border);
+    }
+
+    .explanation-box.show { display: block; }
+
+    .explanation-box h4 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .breakdown-row {
+      font-size: 0.9rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: 6px;
+      margin-bottom: 0.45rem;
+      line-height: 1.45;
+    }
+
+    .breakdown-row.correct {
+      background: var(--correct-bg);
+      border-left: 4px solid #22c55e;
+      color: var(--correct-text);
+    }
+
+    .breakdown-row.incorrect {
+      background: var(--incorrect-bg);
+      border-left: 4px solid #ef4444;
+      color: var(--incorrect-text);
+    }
+
+    /* Actions Bar */
+    .quiz-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2.5rem 0 1rem 0;
+    }
+
+    .btn {
+      padding: 0.85rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s ease;
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-submit:hover { background: var(--primary-hover); }
+
+    .btn-reset {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+
+    .btn-reset:hover { background: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Physics & Fluid Mechanics Assessment</h1>
+    <p>Select the best answer for each of the 20 questions below, then click <strong>Submit Assessment</strong> at the bottom to calculate your score and view explanations.</p>
+  </header>
+
+  <div class="quiz-container">
+
+    <!-- SCORE RESULTS BANNER -->
+    <div class="score-banner" id="scoreBanner">
+      <h2 id="scoreTitle">Score: 0 / 20 (0%)</h2>
+      <p id="scoreSubtitle">Review the detailed breakdowns beneath each question below.</p>
+    </div>
+
+    <!-- QUESTIONS CONTAINER -->
+    <form id="quizForm">
+
+      <!-- Q1 -->
+      <div class="question-card" id="card-q1">
+        <div class="question-header">
+          <span class="q-num">Question 1</span>
+          <span class="q-text">A weather balloon rises higher into the atmosphere, moving farther from Earth's surface. What happens to the air pressure surrounding the balloon?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q1" value="A"><span class="option-letter">A.</span><span>Air pressure remains unchanged because air has a fixed density.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q1" value="B"><span class="option-letter">B.</span><span>Air pressure increases because more atmosphere lies above the balloon.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q1" value="C"><span class="option-letter">C.</span><span>Air pressure decreases because less atmosphere lies above the balloon.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q1" value="D"><span class="option-letter">D.</span><span>Air pressure disappears entirely once the balloon leaves the ground.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q1">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Air is compressible; density is not fixed and decreases significantly with altitude.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Rising decreases the amount of atmosphere overhead, which lowers pressure.</div>
+          <div class="breakdown-row correct"><strong>C (Correct):</strong> Atmospheric pressure is caused by the weight of air molecules overhead. As the balloon rises, less atmosphere remains above it, so air pressure decreases.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> The atmosphere extends dozens of kilometers upward; pressure drops continuously rather than vanishing abruptly.</div>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="question-card" id="card-q2">
+        <div class="question-header">
+          <span class="q-num">Question 2</span>
+          <span class="q-text">A diver notices that a balloon shrinks slightly underwater but a bottle of water stays nearly the same size. Which statement explains this observation?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q2" value="A"><span class="option-letter">A.</span><span>Air compresses much more easily than water does.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q2" value="B"><span class="option-letter">B.</span><span>Water compresses much more easily than air does.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q2" value="C"><span class="option-letter">C.</span><span>Both air and water resist compression to the same degree.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q2" value="D"><span class="option-letter">D.</span><span>Both air and water compress by identical amounts under pressure.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q2">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row correct"><strong>A (Correct):</strong> Gases have vast spaces between particles and compress readily under hydrostatic pressure. Liquid molecules are tightly packed, making liquids virtually incompressible.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Inverted claim; liquids resist compression far more strongly than gases.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Gases and liquids have completely different intermolecular separations and compressibilities.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Their volumetric responses under hydrostatic pressure are vastly unequal.</div>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="question-card" id="card-q3">
+        <div class="question-header">
+          <span class="q-num">Question 3</span>
+          <span class="q-text">Standing several feet away from a bonfire, a camper still feels heat reaching their skin. Which evaluation best explains this?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q3" value="A"><span class="option-letter">A.</span><span>Thermal energy only moves between objects that are touching.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q3" value="B"><span class="option-letter">B.</span><span>Thermal energy cannot cross empty space between objects.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q3" value="C"><span class="option-letter">C.</span><span>Thermal energy can only be carried by a moving fluid like air.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q3" value="D"><span class="option-letter">D.</span><span>Thermal energy can travel through space as radiation, like sunlight.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q3">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Direct physical contact is required only for conduction, not radiation.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Electromagnetic radiation travels across empty space with no matter required.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> While convection moves fluid, hot air rises vertically above the flame rather than traveling sideways to the camper.</div>
+          <div class="breakdown-row correct"><strong>D (Correct):</strong> The camper primarily feels infrared radiation emitted by the fire, which radiates outward across open air in all directions.</div>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="question-card" id="card-q4">
+        <div class="question-header">
+          <span class="q-num">Question 4</span>
+          <span class="q-text">In a hydraulic lift, the output piston has an area five times greater than the input piston. If the input force stays the same, what happens to the output force?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q4" value="A"><span class="option-letter">A.</span><span>The output force stays exactly the same as the input force.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q4" value="B"><span class="option-letter">B.</span><span>The output force becomes five times greater than before.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q4" value="C"><span class="option-letter">C.</span><span>The output force becomes one-fifth of its previous value.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q4" value="D"><span class="option-letter">D.</span><span>The output force becomes twice as large as before.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q4">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Forces remain identical only if the piston surface areas are equal.</div>
+          <div class="breakdown-row correct"><strong>B (Correct):</strong> By Pascal's principle, pressure is uniform throughout ($P = F_1/A_1 = F_2/A_2$). Because the output area is 5× larger, the output force is 5× greater ($F_2 = 5 \times F_1$).</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> An output area that is larger multiplies force; it does not reduce it.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> The mechanical advantage matches the area ratio of 5:1, not 2:1.</div>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="question-card" id="card-q5">
+        <div class="question-header">
+          <span class="q-num">Question 5</span>
+          <span class="q-text">The Moon exerts a gravitational pull on Earth's oceans, causing tides. Which change would increase the gravitational force between the Moon and Earth?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q5" value="A"><span class="option-letter">A.</span><span>Increasing the distance between Earth and the Moon</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q5" value="B"><span class="option-letter">B.</span><span>Increasing the mass of the Moon while distance stays the same</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q5" value="C"><span class="option-letter">C.</span><span>Decreasing the mass of the Moon while distance stays the same</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q5" value="D"><span class="option-letter">D.</span><span>Decreasing the mass of both bodies while distance stays the same</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q5">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Gravitational force is inversely proportional to distance squared; moving bodies farther apart weakens gravity.</div>
+          <div class="breakdown-row correct"><strong>B (Correct):</strong> Under Newton's law ($F = G \frac{m_1 m_2}{r^2}$), gravitational force is directly proportional to mass. Increasing the Moon's mass directly increases gravitational attraction.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Reducing mass decreases gravitational pull.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Reducing both masses significantly weakens the attraction.</div>
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="question-card" id="card-q6">
+        <div class="question-header">
+          <span class="q-num">Question 6</span>
+          <span class="q-text">Which statement correctly explains the difference between heat and temperature?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q6" value="A"><span class="option-letter">A.</span><span>Temperature measures energy transfer, while heat measures particle speed.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q6" value="B"><span class="option-letter">B.</span><span>Heat and temperature both refer only to an object's total thermal energy.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q6" value="C"><span class="option-letter">C.</span><span>Heat and temperature are two different names for the exact same quantity.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q6" value="D"><span class="option-letter">D.</span><span>Heat is the transfer of energy, while temperature reflects average particle motion.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q6">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> This inverts the scientific definitions of both terms.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Total internal energy includes particle count and temperature; heat refers strictly to energy in motion.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> They are distinct physical quantities measured in different units (Joules vs. Kelvin/Celsius).</div>
+          <div class="breakdown-row correct"><strong>D (Correct):</strong> Temperature measures the average kinetic energy of microscopic particles, while heat describes thermal energy flowing from high to low temperature.</div>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="question-card" id="card-q7">
+        <div class="question-header">
+          <span class="q-num">Question 7</span>
+          <span class="q-text">A rubber duck placed in a bathtub floats steadily on the surface of the water. How does Archimedes' principle explain why it doesn't sink?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q7" value="A"><span class="option-letter">A.</span><span>The displaced water pushes upward with a force that balances gravity.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q7" value="B"><span class="option-letter">B.</span><span>The duck's weight becomes negative once it touches the water.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q7" value="C"><span class="option-letter">C.</span><span>The water beneath the duck removes gravity from acting on it.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q7" value="D"><span class="option-letter">D.</span><span>The displaced water reduces the actual mass of the duck itself.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q7">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row correct"><strong>A (Correct):</strong> Archimedes' principle states that upward buoyant force equals the weight of displaced water. The duck floats because this upward buoyant force matches its downward gravitational weight.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Gravitational pull is always directed downward; weight cannot become negative.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Gravity acts on the duck's mass continuously regardless of surrounding fluid.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Buoyancy provides an external supporting force; it does not change the duck's physical mass.</div>
+        </div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="question-card" id="card-q8">
+        <div class="question-header">
+          <span class="q-num">Question 8</span>
+          <span class="q-text">Inside a chimney, smoke and heated gases move upward and escape through the top. Which property of the heated gases explains this upward movement?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q8" value="A"><span class="option-letter">A.</span><span>Heated gases become denser and are pulled toward the ground.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q8" value="B"><span class="option-letter">B.</span><span>Heated gases become more viscous and cling to the chimney walls.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q8" value="C"><span class="option-letter">C.</span><span>Heated gases become less dense and rise above cooler air.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q8" value="D"><span class="option-letter">D.</span><span>Heated gases become compressed and sink toward the fire.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q8">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Heating causes thermal expansion, which lowers density rather than increasing it.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Clinging to walls would impede upward draft rather than assist it.</div>
+          <div class="breakdown-row correct"><strong>C (Correct):</strong> When heated, gas molecules speed up and spread apart, lowering their density. Denser surrounding cool air sinks and forces the warm, less dense smoke upward (natural convection).</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Gases expand when heated, creating an upward buoyant drive rather than sinking.</div>
+        </div>
+      </div>
+
+      <!-- Q9 -->
+      <div class="question-card" id="card-q9">
+        <div class="question-header">
+          <span class="q-num">Question 9</span>
+          <span class="q-text">A nurse waits a few moments after placing a thermometer under a patient's tongue before reading the temperature. Why is this waiting period necessary?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q9" value="A"><span class="option-letter">A.</span><span>It allows the thermometer to stay cooler than the patient's mouth.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q9" value="B"><span class="option-letter">B.</span><span>It allows the patient's body to lose thermal energy during the wait.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q9" value="C"><span class="option-letter">C.</span><span>It gives time for the thermometer and the body to reach the same temperature.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q9" value="D"><span class="option-letter">D.</span><span>It causes the thermometer to generate its own heat until stable.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q9">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> If the thermometer remained cooler, it would register an inaccurate, depressed reading.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> The clinical purpose is measuring the patient's core body temperature, not cooling them down.</div>
+          <div class="breakdown-row correct"><strong>C (Correct):</strong> By the Zeroth Law of Thermodynamics, heat conducts between the mouth and thermometer until thermal equilibrium is established (both reach the exact same temperature).</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Clinical thermometers are passive sensors and do not generate internal heat.</div>
+        </div>
+      </div>
+
+      <!-- Q10 -->
+      <div class="question-card" id="card-q10">
+        <div class="question-header">
+          <span class="q-num">Question 10</span>
+          <span class="q-text">A plumber notices that squeezing one end of a fully water-filled, sealed pipe system causes pressure to rise at the other end almost instantly. What explains this?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q10" value="A"><span class="option-letter">A.</span><span>Pressure only builds up near the point where force is applied.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q10" value="B"><span class="option-letter">B.</span><span>Pressure applied to a confined fluid is transmitted throughout it.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q10" value="C"><span class="option-letter">C.</span><span>Pressure weakens gradually as it moves through the pipe.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q10" value="D"><span class="option-letter">D.</span><span>Pressure cannot travel through a fluid enclosed in a pipe.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q10">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> In an enclosed static liquid, pressure does not stay localized.</div>
+          <div class="breakdown-row correct"><strong>B (Correct):</strong> Pascal's principle states that an external pressure applied to an enclosed, incompressible fluid transmits undiminished to every portion of the fluid and container walls.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> In an enclosed static liquid, pressure transmission does not decay over distance.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Liquids are nearly incompressible, making them excellent transmitters of hydrostatic pressure.</div>
+        </div>
+      </div>
+
+      <!-- Q11 -->
+      <div class="question-card" id="card-q11">
+        <div class="question-header">
+          <span class="q-num">Question 11</span>
+          <span class="q-text">Shipbuilders must calculate how much cargo a vessel can carry without sinking. Which principle is most essential to these calculations?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q11" value="A"><span class="option-letter">A.</span><span>The principle that predicts an object's buoyancy and floating behavior.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q11" value="B"><span class="option-letter">B.</span><span>The principle explaining how pressure increases with fluid depth.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q11" value="C"><span class="option-letter">C.</span><span>The principle describing how fast fluid flow lowers pressure.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q11" value="D"><span class="option-letter">D.</span><span>The principle describing how force multiplies between piston areas.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q11">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row correct"><strong>A (Correct):</strong> Archimedes' principle dictates that maximum cargo capacity equals the maximum water weight the hull can displace before submerging past safe limits.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Hydrostatic pressure increases with depth, but cargo limits depend directly on total water displacement volume.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> This describes Bernoulli's principle for dynamic fluids, not static ship displacement.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Piston mechanics describe hydraulic machinery, not naval flotation limits.</div>
+        </div>
+      </div>
+
+      <!-- Q12 -->
+      <div class="question-card" id="card-q12">
+        <div class="question-header">
+          <span class="q-num">Question 12</span>
+          <span class="q-text">Cooking oil poured into a pan spreads out and conforms to the pan's shape. Which property of fluids explains this behavior?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q12" value="A"><span class="option-letter">A.</span><span>Fluid particles stay fixed in a rigid, unchanging pattern.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q12" value="B"><span class="option-letter">B.</span><span>Fluid particles resist being rearranged in any way.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q12" value="C"><span class="option-letter">C.</span><span>Fluid particles remain locked in place within the fluid.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q12" value="D"><span class="option-letter">D.</span><span>Fluid particles can flow and slide freely past each other.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q12">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> A rigid crystal lattice defines solids, not fluids.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Fluids cannot sustain static shear stress; their particles rearrange immediately under external forces.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Locked molecules define the solid state, preventing fluid flow.</div>
+          <div class="breakdown-row correct"><strong>D (Correct):</strong> In liquids, intermolecular attractions keep particles together while allowing them to slide freely past one another, taking the shape of their container.</div>
+        </div>
+      </div>
+
+      <!-- Q13 -->
+      <div class="question-card" id="card-q13">
+        <div class="question-header">
+          <span class="q-num">Question 13</span>
+          <span class="q-text">A metal fork left resting in a pot of boiling soup becomes noticeably warm at the handle after a few minutes. Which process mainly explains this?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q13" value="A"><span class="option-letter">A.</span><span>Radiation carries energy through the metal without any particles touching.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q13" value="B"><span class="option-letter">B.</span><span>Convection carries energy through the solid metal via flowing particles.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q13" value="C"><span class="option-letter">C.</span><span>Evaporation removes energy as particles leave the fork's surface.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q13" value="D"><span class="option-letter">D.</span><span>Conduction transfers energy through direct contact between particles.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q13">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Internal solid heat transfer along the fork is driven by conduction, not electromagnetic waves.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Convection requires macroscopic fluid flow, which cannot occur inside a rigid metal crystal.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Evaporation is a liquid phase-change cooling mechanism.</div>
+          <div class="breakdown-row correct"><strong>D (Correct):</strong> Conduction transfers kinetic energy along the solid fork through vibrating neighboring lattice atoms and mobile valence electrons.</div>
+        </div>
+      </div>
+
+      <!-- Q14 -->
+      <div class="question-card" id="card-q14">
+        <div class="question-header">
+          <span class="q-num">Question 14</span>
+          <span class="q-text">A heavy cargo ship made of steel floats, but a single steel nail dropped in water sinks immediately. What best explains this difference?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q14" value="A"><span class="option-letter">A.</span><span>The nail is affected by gravity while the ship is not affected by gravity.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q14" value="B"><span class="option-letter">B.</span><span>The ship's hull shape lets it displace enough water for sufficient buoyant force.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q14" value="C"><span class="option-letter">C.</span><span>The nail is denser because its mass is concentrated in a smaller volume.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q14" value="D"><span class="option-letter">D.</span><span>The ship is made of a special lightweight type of steel unlike the nail.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q14">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Earth's gravity pulls powerfully on both; the ship experiences millions of Newtons of downward gravitational pull.</div>
+          <div class="breakdown-row correct"><strong>B (Correct):</strong> The ship's hollow hull encloses vast volumes of air, reducing its <em>average density</em> below that of water and displacing water equal to the entire ship's weight.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Both nail and ship plating share the exact same intrinsic material density ($\approx 7.8\text{ g/cm}^3$).</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Ships are built from standard structural steel, not buoyant lightweight alloys.</div>
+        </div>
+      </div>
+
+      <!-- Q15 -->
+      <div class="question-card" id="card-q15">
+        <div class="question-header">
+          <span class="q-num">Question 15</span>
+          <span class="q-text">A paperclip placed carefully on still water floats instead of sinking, even though metal is denser than water. Which property of water allows this?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q15" value="A"><span class="option-letter">A.</span><span>The viscosity of water holds the paperclip's particles together.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q15" value="B"><span class="option-letter">B.</span><span>The pressure of water pushes the paperclip upward rigidly.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q15" value="C"><span class="option-letter">C.</span><span>The surface tension of water resists the paperclip's downward push.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q15" value="D"><span class="option-letter">D.</span><span>The density of water keeps the paperclip motionless on top.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q15">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Viscosity measures internal resistance to flow, not surface support.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Standard hydrostatic buoyant pressure is insufficient to float dense solid steel.</div>
+          <div class="breakdown-row correct"><strong>C (Correct):</strong> Cohesive hydrogen bonds between surface water molecules create an elastic-like membrane (surface tension) that supports small, lightweight items without breaking.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Steel is denser than water; if submerged beneath the surface, the clip sinks immediately.</div>
+        </div>
+      </div>
+
+      <!-- Q16 -->
+      <div class="question-card" id="card-q16">
+        <div class="question-header">
+          <span class="q-num">Question 16</span>
+          <span class="q-text">A can of cold soda is left sitting on a kitchen counter in a warm room until it warms up. Which statement best explains the direction of heat flow?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q16" value="A"><span class="option-letter">A.</span><span>Heat moves from the room into the soda because their temperatures differ.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q16" value="B"><span class="option-letter">B.</span><span>Heat flow stops completely because soda cannot absorb outside energy.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q16" value="C"><span class="option-letter">C.</span><span>Heat moves away from the counter because it started out warmer.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q16" value="D"><span class="option-letter">D.</span><span>Heat moves into the soda because cold objects naturally pull in heat.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q16">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row correct"><strong>A (Correct):</strong> Spontaneous heat flow always moves from areas of higher temperature (the warm room) to areas of lower temperature (the cold can) until thermal equilibrium is attained.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Thermal energy conducts readily through thin aluminum can walls.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Heat flows into the can from both the warmer room air and the warmer counter.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Cold is simply the absence of thermal energy; it possesses no active pulling force.</div>
+        </div>
+      </div>
+
+      <!-- Q17 -->
+      <div class="question-card" id="card-q17">
+        <div class="question-header">
+          <span class="q-num">Question 17</span>
+          <span class="q-text">Julio claims that a helium balloon rises because it has "negative weight." Which evaluation is most accurate?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q17" value="A"><span class="option-letter">A.</span><span>Correct, because objects with negative weight always float upward.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q17" value="B"><span class="option-letter">B.</span><span>Correct, because buoyant force cancels out weight only for gases.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q17" value="C"><span class="option-letter">C.</span><span>Incorrect, because balloons rise due to their bright color attracting less gravity.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q17" value="D"><span class="option-letter">D.</span><span>Incorrect, because buoyant force depends on the fluid displaced, not the object's weight sign.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q17">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> "Negative weight" is a misconception; gravity pulls downward on all real mass.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Buoyant forces act on solids and liquids in fluids, not exclusively on gases.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Color has zero physical effect on gravitational mass or acceleration.</div>
+          <div class="breakdown-row correct"><strong>D (Correct):</strong> Helium and the latex balloon have positive mass and positive downward weight. The balloon rises because the upward buoyant force (the weight of displaced air) exceeds its total weight ($F_b > F_g$).</div>
+        </div>
+      </div>
+
+      <!-- Q18 -->
+      <div class="question-card" id="card-q18">
+        <div class="question-header">
+          <span class="q-num">Question 18</span>
+          <span class="q-text">A curveball thrown by a pitcher curves sideways as it travels through the air. Which principle helps explain this curved path?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q18" value="A"><span class="option-letter">A.</span><span>The principle explaining how objects lose mass while spinning quickly.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q18" value="B"><span class="option-letter">B.</span><span>The principle explaining how airflow speed creates pressure differences.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q18" value="C"><span class="option-letter">C.</span><span>The principle explaining how gravity pulls harder on spinning balls.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q18" value="D"><span class="option-letter">D.</span><span>The principle explaining how thermal energy converts into motion.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q18">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> Spinning does not alter the physical mass of the baseball.</div>
+          <div class="breakdown-row correct"><strong>B (Correct):</strong> Spin speeds up airflow on one side of the ball and slows it on the other. By Bernoulli's principle, faster airflow produces lower pressure, resulting in a lateral deflecting force (the Magnus effect).</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Gravitational pull acts vertically downward and is unaffected by rotation.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> The trajectory curve is driven by aerodynamic fluid pressure, not thermodynamic conversion.</div>
+        </div>
+      </div>
+
+      <!-- Q19 -->
+      <div class="question-card" id="card-q19">
+        <div class="question-header">
+          <span class="q-num">Question 19</span>
+          <span class="q-text">A dentist's chair can be raised or lowered using a small pedal connected to a larger piston beneath the seat. Which principle explains how this works?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q19" value="A"><span class="option-letter">A.</span><span>Pascal's principle</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q19" value="B"><span class="option-letter">B.</span><span>Newton's principle</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q19" value="C"><span class="option-letter">C.</span><span>Bernoulli's principle</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q19" value="D"><span class="option-letter">D.</span><span>Archimedes' principle</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q19">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row correct"><strong>A (Correct):</strong> Pascal's principle governs enclosed hydraulic systems: pressure applied at a small pedal piston transmits undiminished to a larger piston, multiplying force to lift the chair.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Newton's laws explain general force interactions, but do not formulate hydrostatic pressure transmission.</div>
+          <div class="breakdown-row incorrect"><strong>C:</strong> Bernoulli's principle applies to moving fluid streams and dynamic pressure drops.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> Archimedes' principle deals with fluid displacement and buoyancy.</div>
+        </div>
+      </div>
+
+      <!-- Q20 -->
+      <div class="question-card" id="card-q20">
+        <div class="question-header">
+          <span class="q-num">Question 20</span>
+          <span class="q-text">Car mechanics use hydraulic lifts to raise entire vehicles off the ground for repairs. Why is Pascal's principle important for this equipment to function?</span>
+        </div>
+        <div class="options-group">
+          <label class="option-label" data-choice="A"><input type="radio" name="q20" value="A"><span class="option-letter">A.</span><span>It allows objects to become weightless while inside hydraulic fluid.</span></label>
+          <label class="option-label" data-choice="B"><input type="radio" name="q20" value="B"><span class="option-letter">B.</span><span>It allows heat to pass quickly through the hydraulic fluid.</span></label>
+          <label class="option-label" data-choice="C"><input type="radio" name="q20" value="C"><span class="option-letter">C.</span><span>It allows a small input force to be transmitted as pressure throughout the fluid.</span></label>
+          <label class="option-label" data-choice="D"><input type="radio" name="q20" value="D"><span class="option-letter">D.</span><span>It allows fast-moving fluid to create areas of lower pressure.</span></label>
+        </div>
+        <div class="explanation-box" id="exp-q20">
+          <h4>Detailed Explanation</h4>
+          <div class="breakdown-row incorrect"><strong>A:</strong> The car rests on structural steel arms above ground; it is not submerged in fluid.</div>
+          <div class="breakdown-row incorrect"><strong>B:</strong> Thermal conductivity is irrelevant to mechanical lifting capacity.</div>
+          <div class="breakdown-row correct"><strong>C (Correct):</strong> Pascal's principle ensures pressure applied at a narrow input cylinder transmits undiminished to a wide cylinder, creating the multiplied lifting force necessary to raise a vehicle.</div>
+          <div class="breakdown-row incorrect"><strong>D:</strong> This describes Bernoulli's principle for dynamic fluids, not static hydraulic pressure.</div>
+        </div>
+      </div>
+
+      <!-- SUBMIT & RESET ACTIONS -->
+      <div class="quiz-actions">
+        <button type="button" class="btn btn-submit" onclick="gradeQuiz()">Submit Assessment</button>
+        <button type="button" class="btn btn-reset" onclick="resetQuiz()">Reset Answers</button>
+      </div>
+
+    </form>
+
+  </div>
+
+  <script>
+    // Scrambled, pattern-free answer key (5 A's, 5 B's, 5 C's, 5 D's)
+    const answerKey = {
+      q1: "C", q2: "A", q3: "D", q4: "B", q5: "B",
+      q6: "D", q7: "A", q8: "C", q9: "C", q10: "B",
+      q11: "A", q12: "D", q13: "D", q14: "B", q15: "C",
+      q16: "A", q17: "D", q18: "B", q19: "A", q20: "C"
+    };
+
+    function gradeQuiz() {
+      const form = document.getElementById('quizForm');
+      let score = 0;
+      const total = Object.keys(answerKey).length;
+
+      for (let i = 1; i <= total; i++) {
+        const qName = 'q' + i;
+        const correctVal = answerKey[qName];
+        const selected = form.elements[qName]?.value;
+        const card = document.getElementById('card-' + qName);
+        const labels = card.querySelectorAll('.option-label');
+        const expBox = document.getElementById('exp-' + qName);
+
+        // Reset past classes
+        labels.forEach(l => l.classList.remove('is-correct', 'is-wrong'));
+
+        // Highlight correct option
+        labels.forEach(l => {
+          const choice = l.getAttribute('data-choice');
+          if (choice === correctVal) {
+            l.classList.add('is-correct');
+          } else if (choice === selected && selected !== correctVal) {
+            l.classList.add('is-wrong');
+          }
+        });
+
+        if (selected === correctVal) {
+          score++;
+        }
+
+        // Show detailed explanation box
+        expBox.classList.add('show');
+      }
+
+      // Display banner
+      const banner = document.getElementById('scoreBanner');
+      const scoreTitle = document.getElementById('scoreTitle');
+      const scoreSubtitle = document.getElementById('scoreSubtitle');
+      const percentage = Math.round((score / total) * 100);
+
+      scoreTitle.textContent = `Score: ${score} / ${total} (${percentage}%)`;
+      if (percentage >= 80) {
+        scoreSubtitle.textContent = "Excellent work! You have demonstrated a strong understanding of these core principles.";
+      } else if (percentage >= 60) {
+        scoreSubtitle.textContent = "Good attempt! Review the highlighted breakdown boxes below to strengthen your grasp.";
+      } else {
+        scoreSubtitle.textContent = "Take time to read through the green and red breakdown notes below to review these concepts.";
+      }
+      banner.classList.add('show');
+
+      // Scroll smoothly to score summary
+      banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetQuiz() {
+      const form = document.getElementById('quizForm');
+      form.reset();
+
+      // Clear highlights and explanations
+      document.querySelectorAll('.option-label').forEach(l => l.classList.remove('is-correct', 'is-wrong'));
+      document.querySelectorAll('.explanation-box').forEach(e => e.classList.remove('show'));
+      
+      const banner = document.getElementById('scoreBanner');
+      banner.classList.remove('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
